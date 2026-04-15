@@ -1,0 +1,20 @@
+# Gradle build output
+build/
+.gradle/
+
+# IntelliJ IDEA project files
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Plugin distribution
+*.zip
+*.jar
+
+# Local dev data
+.liveapitester/
