@@ -24,6 +24,7 @@ class ResponsePanel : JPanel(BorderLayout()) {
     private val bodyArea = JTextArea()
     private val headersTableModel = DefaultTableModel(arrayOf("Header", "Value"), 0)
     private val tabbedPane = JBTabbedPane()
+    private val aiService = AiService()
 
     private var currentRequest: ApiRequest? = null
     private var currentResponse: ApiResponse? = null
@@ -183,7 +184,7 @@ class ResponsePanel : JPanel(BorderLayout()) {
         val resp = currentResponse ?: return
 
         if (resp.statusCode in 400..599 || resp.statusCode == 0) {
-            runAiAction("Explain Error") { AiService().explainError(req, resp) }
+            runAiAction("Explain Error") { aiService.explainError(req, resp) }
         } else {
             JOptionPane.showMessageDialog(
                 this,
@@ -197,13 +198,13 @@ class ResponsePanel : JPanel(BorderLayout()) {
     private fun suggestTests() {
         val req = currentRequest ?: return
         val resp = currentResponse ?: return
-        runAiAction("Suggested Tests") { AiService().suggestTests(req, resp) }
+        runAiAction("Suggested Tests") { aiService.suggestTests(req, resp) }
     }
 
     private fun generateBody() {
         val req = currentRequest ?: return
         runAiAction("Generated Request Body") {
-            AiService().generateRequestBody(req.url, req.method.name, "")
+            aiService.generateRequestBody(req.url, req.method.name, "")
         }
     }
 

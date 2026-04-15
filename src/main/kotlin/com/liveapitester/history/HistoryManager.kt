@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project
 import com.liveapitester.http.ApiRequest
 import com.liveapitester.http.ApiResponse
 import com.liveapitester.settings.LiveApiTesterSettings
+import com.liveapitester.util.StorageUtil
 import java.io.File
 
 @Service(Service.Level.PROJECT)
@@ -45,11 +46,7 @@ class HistoryManager(private val project: Project) {
         saveHistory()
     }
 
-    private fun getStorageFile(): File {
-        val baseDir = File(project.basePath ?: System.getProperty("user.home"), ".liveapitester")
-        baseDir.mkdirs()
-        return File(baseDir, "history.json")
-    }
+    private fun getStorageFile(): File = StorageUtil.getStorageFile(project, "history.json")
 
     private fun loadHistory() {
         val file = getStorageFile()

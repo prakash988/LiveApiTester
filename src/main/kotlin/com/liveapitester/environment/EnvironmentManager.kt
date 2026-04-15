@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.liveapitester.util.StorageUtil
 import java.io.File
 
 @Service(Service.Level.PROJECT)
@@ -52,11 +53,7 @@ class EnvironmentManager(private val project: Project) {
         }
     }
 
-    private fun getStorageFile(): File {
-        val baseDir = File(project.basePath ?: System.getProperty("user.home"), ".liveapitester")
-        baseDir.mkdirs()
-        return File(baseDir, "environments.json")
-    }
+    private fun getStorageFile(): File = StorageUtil.getStorageFile(project, "environments.json")
 
     data class EnvironmentData(
         val environments: List<Environment>,
@@ -77,7 +74,7 @@ class EnvironmentManager(private val project: Project) {
         }
         if (environments.isEmpty()) {
             val defaultEnv = Environment(name = "Development", variables = mutableMapOf(
-                "base_url" to "http://localhost:8080",
+                "base_url" to DEFAULT_BASE_URL,
                 "api_version" to "v1"
             ))
             environments.add(defaultEnv)
@@ -95,6 +92,8 @@ class EnvironmentManager(private val project: Project) {
     }
 
     companion object {
+        const val DEFAULT_BASE_URL = "http://localhost:8080"
+
         fun getInstance(project: Project): EnvironmentManager =
             project.getService(EnvironmentManager::class.java)
     }

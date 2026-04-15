@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.liveapitester.util.StorageUtil
 import java.io.File
 
 @Service(Service.Level.PROJECT)
@@ -49,11 +50,7 @@ class CollectionManager(private val project: Project) {
         saveCollections()
     }
 
-    private fun getStorageFile(): File {
-        val baseDir = File(project.basePath ?: System.getProperty("user.home"), ".liveapitester")
-        baseDir.mkdirs()
-        return File(baseDir, "collections.json")
-    }
+    private fun getStorageFile(): File = StorageUtil.getStorageFile(project, "collections.json")
 
     private fun loadCollections() {
         val file = getStorageFile()

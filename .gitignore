@@ -12,9 +12,9 @@ build/
 .DS_Store
 Thumbs.db
 
-# Plugin distribution
-*.zip
-*.jar
+# Plugin distribution (but NOT the Gradle wrapper jar)
+build/distributions/*.zip
+!gradle/wrapper/gradle-wrapper.jar
 
 # Local dev data
 .liveapitester/

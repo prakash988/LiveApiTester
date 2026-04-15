@@ -283,7 +283,8 @@ class RequestPanel(
         methodCombo.selectedItem = endpoint.httpMethod
         updateMethodColor()
         val baseUrl = com.liveapitester.environment.EnvironmentManager.getInstance(project)
-            .getActiveVariables()["base_url"] ?: "http://localhost:8080"
+            .getActiveVariables()["base_url"]
+            ?: com.liveapitester.environment.EnvironmentManager.DEFAULT_BASE_URL
         urlField.text = "$baseUrl${endpoint.path}"
     }
 
