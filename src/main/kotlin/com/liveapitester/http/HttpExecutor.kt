@@ -12,6 +12,13 @@ import javax.net.ssl.*
 
 class HttpExecutor {
 
+    @Volatile
+    private var currentCall: Call? = null
+
+    fun cancel() {
+        currentCall?.cancel()
+    }
+
     fun execute(
         request: ApiRequest,
         settings: LiveApiTesterSettings,
@@ -21,8 +28,11 @@ class HttpExecutor {
         val client = buildClient(settings)
         val okRequest = buildOkHttpRequest(resolvedRequest)
 
+        val call = client.newCall(okRequest)
+        currentCall = call
+
         val startTime = System.currentTimeMillis()
-        client.newCall(okRequest).execute().use { response ->
+        call.execute().use { response ->
             val responseTimeMs = System.currentTimeMillis() - startTime
             val responseBody = response.body?.string() ?: ""
             val responseSizeBytes = responseBody.toByteArray().size.toLong()
@@ -155,5 +165,67 @@ class HttpExecutor {
             else -> "application/json; charset=utf-8"
         }
         return request.body.toRequestBody(mediaType.toMediaTypeOrNull())
+    }
+
+    companion object {
+        fun buildCurlCommand(request: ApiRequest, envVars: Map<String, String> = emptyMap()): String {
+            fun interpolate(text: String): String {
+                var result = text
+                for ((key, value) in envVars) {
+                    result = result.replace("{{$key}}", value)
+                }
+                return result
+            }
+
+            val sb = StringBuilder("curl -X ${request.method.name}")
+
+            // Add auth headers
+            when (request.authType) {
+                "Bearer Token" -> {
+                    val token = request.authCredentials["token"] ?: ""
+                    if (token.isNotBlank()) sb.append(" \\\n  -H 'Authorization: Bearer $token'")
+                }
+                "Basic Auth" -> {
+                    val username = request.authCredentials["username"] ?: ""
+                    val password = request.authCredentials["password"] ?: ""
+                    if (username.isNotBlank()) sb.append(" \\\n  -u '$username:$password'")
+                }
+                "API Key" -> {
+                    val key = request.authCredentials["key"] ?: ""
+                    val value = request.authCredentials["value"] ?: ""
+                    val addTo = request.authCredentials["addTo"] ?: "Header"
+                    if (key.isNotBlank() && addTo == "Header") {
+                        sb.append(" \\\n  -H '${interpolate(key)}: ${interpolate(value)}'")
+                    }
+                }
+            }
+
+            // Add custom headers (skip Authorization - already handled above)
+            for ((key, value) in request.headers) {
+                if (key.isNotBlank() && !key.equals("Authorization", ignoreCase = true)) {
+                    sb.append(" \\\n  -H '${interpolate(key)}: ${interpolate(value)}'")
+                }
+            }
+
+            // Add content-type header if body is present
+            if (!request.body.isNullOrBlank() && request.contentType != "none") {
+                sb.append(" \\\n  -H 'Content-Type: ${request.contentType}'")
+                val escapedBody = interpolate(request.body).replace("'", "'\\''")
+                sb.append(" \\\n  -d '$escapedBody'")
+            }
+
+            // Build URL with query params
+            val rawUrl = interpolate(request.url)
+            val urlBuilder = StringBuilder(rawUrl)
+            if (request.queryParams.isNotEmpty()) {
+                urlBuilder.append("?")
+                urlBuilder.append(request.queryParams.entries.joinToString("&") {
+                    "${interpolate(it.key)}=${interpolate(it.value)}"
+                })
+            }
+
+            sb.append(" \\\n  '${urlBuilder}'")
+            return sb.toString()
+        }
     }
 }

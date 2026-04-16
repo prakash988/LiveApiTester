@@ -31,7 +31,11 @@ class AiService {
             appendLine("  Method: ${request.method}")
             appendLine("  URL: ${request.url}")
             if (request.headers.isNotEmpty()) {
-                appendLine("  Headers: ${request.headers.entries.joinToString(", ") { "${it.key}: ${it.value}" }}")
+                val safeHeaders = request.headers.entries
+                    .joinToString(", ") { (k, v) ->
+                        if (k.lowercase() == "authorization") "$k: [REDACTED]" else "$k: $v"
+                    }
+                appendLine("  Headers: $safeHeaders")
             }
             if (!request.body.isNullOrBlank()) {
                 appendLine("  Body: ${request.body.take(500)}")
@@ -60,7 +64,10 @@ class AiService {
             appendLine("  Method: ${request.method}")
             appendLine("  URL: ${request.url}")
             if (request.headers.isNotEmpty()) {
-                appendLine("  Headers: ${request.headers.entries.joinToString(", ") { "${it.key}: ${it.value}" }}")
+                val safeHeaders = request.headers.entries
+                    .filter { (k, _) -> k.lowercase() != "authorization" }
+                    .joinToString(", ") { (k, v) -> "$k: $v" }
+                if (safeHeaders.isNotBlank()) appendLine("  Headers: $safeHeaders")
             }
             if (!request.body.isNullOrBlank()) {
                 appendLine("  Request Body: ${request.body.take(500)}")
@@ -101,12 +108,60 @@ class AiService {
         return callAiApi(prompt)
     }
 
+    fun analyzeDebugState(
+        request: ApiRequest,
+        response: ApiResponse?,
+        stackTrace: String,
+        variables: Map<String, String>,
+        sourceContext: String
+    ): String {
+        val prompt = buildString {
+            appendLine("You are debugging a backend API. A breakpoint was hit during this API request.")
+            appendLine("Analyze the current state and identify potential issues.")
+            appendLine()
+            appendLine("Request:")
+            appendLine("  Method: ${request.method}")
+            appendLine("  URL: ${request.url}")
+            if (!request.body.isNullOrBlank()) {
+                appendLine("  Body: ${request.body.take(500)}")
+            }
+            if (response != null) {
+                appendLine()
+                appendLine("Response (so far):")
+                appendLine("  Status: ${response.statusCode} ${response.statusText}")
+                if (response.body.isNotBlank()) {
+                    appendLine("  Body: ${response.body.take(500)}")
+                }
+            }
+            if (stackTrace.isNotBlank()) {
+                appendLine()
+                appendLine("Stack Trace:")
+                appendLine(stackTrace.take(2000))
+            }
+            if (variables.isNotEmpty()) {
+                appendLine()
+                appendLine("Current Variables:")
+                variables.entries.take(20).forEach { (k, v) ->
+                    appendLine("  $k = $v")
+                }
+            }
+            if (sourceContext.isNotBlank()) {
+                appendLine()
+                appendLine("Source Code Context:")
+                appendLine(sourceContext.take(1000))
+            }
+            appendLine()
+            appendLine("Explain what's happening at this point in execution and if there are any bugs or issues.")
+        }
+        return callAiApi(prompt)
+    }
+
     private fun callAiApi(prompt: String): String {
         val settings = LiveApiTesterSettings.getInstance()
         val apiKey = getApiKey()
 
         if (apiKey.isNullOrBlank()) {
-            return "❌ AI API key not configured. Please go to Settings > Tools > LiveApiTester and enter your API key."
+            return "❌ GitHub Personal Access Token not configured. Please go to Settings > Tools > LiveApiTester and enter your GitHub PAT."
         }
 
         val requestBody = JsonObject().apply {
@@ -130,13 +185,13 @@ class AiService {
             client.newCall(request).execute().use { response ->
                 val responseBody = response.body?.string() ?: ""
                 if (!response.isSuccessful) {
-                    "❌ AI API error (${response.code}): $responseBody"
+                    "❌ GitHub Models API error (${response.code}): $responseBody"
                 } else {
                     parseAiResponse(responseBody)
                 }
             }
         } catch (e: IOException) {
-            "❌ Network error calling AI API: ${e.message}"
+            "❌ Network error calling GitHub Models API: ${e.message}"
         } catch (e: Exception) {
             "❌ Error: ${e.message}"
         }
@@ -162,7 +217,7 @@ class AiService {
 
     private fun getApiKey(): String? {
         val credentialAttributes = CredentialAttributes(
-            generateServiceName("LiveApiTester", "AI_API_KEY")
+            generateServiceName("LiveApiTester", "GITHUB_PAT")
         )
         return PasswordSafe.instance.getPassword(credentialAttributes)
     }
@@ -170,7 +225,7 @@ class AiService {
     companion object {
         fun saveApiKey(apiKey: String) {
             val credentialAttributes = CredentialAttributes(
-                generateServiceName("LiveApiTester", "AI_API_KEY")
+                generateServiceName("LiveApiTester", "GITHUB_PAT")
             )
             PasswordSafe.instance.setPassword(credentialAttributes, apiKey)
         }

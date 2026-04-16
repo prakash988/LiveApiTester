@@ -2,9 +2,10 @@
 
 [![JetBrains Plugin](https://img.shields.io/badge/JetBrains-Plugin-blue)](https://plugins.jetbrains.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9-orange)](https://kotlinlang.org/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.8-orange)](https://kotlinlang.org/)
+[![Version](https://img.shields.io/badge/version-2.0.0-green)](https://github.com/prakash988/LiveApiTester)
 
-> **Like Postman / Bruno — but embedded directly inside IntelliJ IDEA and powered by AI.**
+> **Like Postman/Bruno — but embedded directly inside IntelliJ IDEA, powered by GitHub Models AI, and with full IntelliJ Debugger Integration.**
 
 ---
 
@@ -12,39 +13,38 @@
 
 | Feature | Description |
 |---|---|
-| 🚀 **Live HTTP Client** | Full request builder — GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS |
-| 🤖 **AI: Explain Error** | On 4xx/5xx responses, AI explains what went wrong and suggests fixes |
-| 🤖 **AI: Suggest Tests** | AI generates positive, negative, and edge-case test scenarios |
-| 🤖 **AI: Generate Body** | AI creates a sample request body for any endpoint |
-| 🔍 **Endpoint Scanner** | Auto-discovers Spring Boot & JAX-RS REST endpoints in your project |
-| 📁 **Collections** | Save and organize requests — like Postman collections |
-| 🌍 **Environments** | Manage dev/staging/prod variables with `{{variable}}` interpolation |
-| 📜 **Request History** | Scrollable history of all requests; click to replay |
-| 🔐 **Auth Support** | Bearer Token, Basic Auth, API Key |
-| ⚙️ **Settings Page** | Configure AI endpoint, model, API key, timeouts, SSL |
+| 🚀 **Live HTTP Client** | Full request builder — URL, method, headers, body, params, auth |
+| 📊 **Response Viewer** | Pretty-printed JSON, color-coded status, response time color coding |
+| 🐛 **Send & Debug** | Auto-sets breakpoints on matching controller methods, starts debug session |
+| ▶️ **Service Management** | Start/stop backend services directly from the plugin |
+| 🤖 **AI: Explain Error** | GitHub Models AI analyzes 4xx/5xx errors and suggests fixes |
+| 🤖 **AI: Suggest Tests** | AI generates positive, negative & edge-case tests |
+| 🤖 **AI: Generate Body** | AI creates sample request bodies |
+| 🤖 **AI: Debug Analysis** | AI analyzes debug state (stack trace, variables) when breakpoint is hit |
+| 🔍 **Endpoint Scanner** | Auto-discovers Spring Boot & JAX-RS endpoints from your code |
+| 📁 **Collections** | Save/organize requests |
+| 🌍 **Environments** | Dev/Staging/Prod variables with `{{variable}}` interpolation |
+| 📜 **Request History** | Last 100 requests with replay |
+| 📋 **Copy as cURL** | One-click export as cURL command |
+| ⌨️ **Keyboard Shortcuts** | `Ctrl+Enter` (send), `Ctrl+Shift+Enter` (debug), `Escape` (cancel) |
+| 🔒 **Security** | Auth header masking, PasswordSafe for PAT storage |
+| ⚙️ **Settings** | GitHub Models endpoint, model selector, timeouts, SSL options |
 
 ---
 
 ## 📸 UI Layout
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  LiveApiTester Tool Window                               │
-├──────────────┬──────────────────────────────────────────┤
-│ History      │  [GET ▾] [URL field              ] [Send]│
-│ Collections  │  ┌ Params | Headers | Body | Auth ─────┐ │
-│ Environments │  │  key-value tables / body editor      │ │
-│              │  └──────────────────────────────────────┘ │
-│              ├──────────────────────────────────────────┤
-│              │  Status: 200 OK  Time: 142ms  Size: 1.2KB│
-│              │  ┌ Body | Headers ───────────────────┐   │
-│              │  │  {                                 │   │
-│              │  │    "id": 1,                        │   │
-│              │  │    "name": "example"               │   │
-│              │  │  }                                 │   │
-│              │  └────────────────────────────────────┘   │
-│              │  [Copy] [🤖 Explain Error] [🤖 Tests]     │
-└──────────────┴──────────────────────────────────────────┘
+┌─────────────────────┬──────────────────────────────────────────┐
+│ History             │  [GET ▼] [URL field          ] [▶ Send] [🐛 Send & Debug] │
+│ Collections         │  Service: ● [config ▼] [▶] [⏹]          │
+│ Environments        ├──────────────────────────────────────────┤
+│                     │  Params | Headers | Body | Auth           │
+│                     ├──────────────────────────────────────────┤
+│                     │  Status: 200 OK   Time: 45ms   Size: 2KB  │
+│                     │  Body | Headers                           │
+│                     │  [Copy] [🤖 Explain Error] [🤖 Suggest Tests] [🤖 Debug Analysis] │
+└─────────────────────┴──────────────────────────────────────────┘
 ```
 
 ---
@@ -76,22 +76,26 @@ The plugin ZIP will be in `build/distributions/`. Install it via:
 
 ## ⚙️ Configuration
 
-### AI Configuration
+### GitHub Models AI Configuration
 
 1. Open **Settings → Tools → LiveApiTester**
-2. Set **API Endpoint** (default: `https://api.openai.com/v1/chat/completions`)
-3. Set **Model** (default: `gpt-4`)
-4. Enter your **API Key** (stored securely via IntelliJ PasswordSafe)
+2. **GitHub Models API Endpoint** (default: `https://models.github.ai/inference/chat/completions`)
+3. **Model** — select from dropdown:
+   - `gpt-4o` (default)
+   - `gpt-4o-mini`
+   - `claude-3.5-sonnet`
+   - `Meta-Llama-3.1-405B-Instruct`
+   - `Mistral-Large`
+4. **GitHub Personal Access Token (PAT)** — stored securely in IntelliJ PasswordSafe
 
-### Compatible AI Providers
+### Getting a GitHub PAT
 
-| Provider | Endpoint |
-|---|---|
-| OpenAI | `https://api.openai.com/v1/chat/completions` |
-| Azure OpenAI | `https://<your-resource>.openai.azure.com/openai/deployments/<deployment>/chat/completions?api-version=2024-02-01` |
-| Ollama (local) | `http://localhost:11434/v1/chat/completions` |
-| LM Studio | `http://localhost:1234/v1/chat/completions` |
-| Any OpenAI-compatible | Custom URL |
+1. Go to [github.com/settings/tokens](https://github.com/settings/tokens)
+2. Click **"Generate new token (classic)"**
+3. Select the **`models`** or **`copilot`** scope
+4. Copy the token and paste it in LiveApiTester settings
+
+> **Note:** GitHub Models API is free for GitHub Copilot subscribers.
 
 ---
 
@@ -100,44 +104,42 @@ The plugin ZIP will be in `build/distributions/`. Install it via:
 ### Making a Request
 
 1. Open the **LiveApiTester** tool window (bottom panel)
-2. Enter a URL in the URL bar
-3. Select HTTP method from the dropdown
-4. Configure **Params**, **Headers**, **Body**, **Auth** in the tabs
-5. Click **Send**
+2. Select HTTP method and enter URL
+3. Add headers, params, body, or auth as needed
+4. Press **▶ Send** or `Ctrl+Enter`
 
-### Using Variables
+### Send & Debug
 
-Define variables in the **Environments** panel:
-```
-base_url = http://localhost:8080
-api_version = v1
-token = my-secret-token
-```
+1. Configure your Spring Boot app as a Run Configuration
+2. Enter the API URL that maps to a controller method
+3. Click **🐛 Send & Debug** or press `Ctrl+Shift+Enter`
+4. The plugin will:
+   - Find the matching `@GetMapping`/`@PostMapping` method
+   - Set a breakpoint on it automatically
+   - Start your app in Debug mode (if not running)
+   - Send the HTTP request
+   - IntelliJ pauses at the breakpoint
+5. Use the Debug Controls toolbar: **Step Over**, **Step Into**, **Resume**, **Stop**
+6. Click **🤖 AI Debug Analysis** to get AI analysis of the current debug state
 
-Use them in requests:
-```
-URL: {{base_url}}/{{api_version}}/users
-Header: Authorization: Bearer {{token}}
-```
+### Start/Stop Services
 
-### Endpoint Scanner
+- Use the **Service** bar in the request panel
+- Select a run configuration from the dropdown
+- Click **▶** to start, **⏹** to stop
+- The status dot shows: 🟢 running, 🟡 starting, 🔴 stopped
 
-1. Go to **Tools → Scan API Endpoints** (or press `Ctrl+Shift+E`)
-2. A popup shows all discovered Spring Boot / JAX-RS endpoints
-3. Double-click an endpoint to load it into the request builder
+### Keyboard Shortcuts
 
-### AI Features
+| Shortcut | Action |
+|---|---|
+| `Ctrl+Enter` / `Cmd+Enter` | Send request |
+| `Ctrl+Shift+Enter` | Send & Debug |
+| `Escape` | Cancel in-flight request |
 
-After receiving a response:
-- **🤖 Explain Error** — Enabled on 4xx/5xx; AI explains the error and suggests fixes
-- **🤖 Suggest Tests** — AI generates test cases for the endpoint
-- **🤖 Generate Body** — AI creates a sample request body
+### Copy as cURL
 
-### Collections
-
-- Click **+** in the Collections panel to create a collection
-- Right-click a collection to add the current request
-- Double-click a saved request to load it
+Click the **cURL** button to copy the current request as a cURL command. Environment variables are resolved automatically.
 
 ---
 
@@ -146,48 +148,64 @@ After receiving a response:
 ```
 src/main/kotlin/com/liveapitester/
 ├── actions/
-│   └── ScanEndpointsAction.kt      # Tools menu action for endpoint scanning
+│   └── ScanEndpointsAction.kt       # Tools menu action for endpoint scanning
 ├── ai/
-│   └── AiService.kt                # OpenAI-compatible AI integration
+│   └── AiService.kt                 # GitHub Models AI integration
 ├── collections/
-│   ├── ApiCollection.kt            # Collection data model
-│   └── CollectionManager.kt        # Save/load collections to JSON
+│   ├── ApiCollection.kt             # Collection data model
+│   └── CollectionManager.kt         # Save/load collections to JSON
+├── debugger/
+│   ├── DebuggerService.kt           # Core debugger integration service
+│   ├── EndpointMethodResolver.kt    # Maps URLs to PSI controller methods
+│   └── ServiceManager.kt           # Manages run configurations
 ├── environment/
-│   ├── Environment.kt              # Environment data model
-│   └── EnvironmentManager.kt       # Manage environments
+│   ├── Environment.kt               # Environment data model
+│   └── EnvironmentManager.kt        # Manage environments
 ├── history/
-│   ├── HistoryEntry.kt             # History entry data model
-│   └── HistoryManager.kt           # Persist last 100 requests
+│   ├── HistoryEntry.kt              # History entry data model
+│   └── HistoryManager.kt            # Persist last 100 requests
 ├── http/
-│   ├── HttpMethod.kt               # HTTP method enum
-│   ├── ApiRequest.kt               # Request data class
-│   ├── ApiResponse.kt              # Response data class
-│   └── HttpExecutor.kt             # OkHttp request executor
+│   ├── HttpMethod.kt                # HTTP method enum
+│   ├── ApiRequest.kt                # Request data class
+│   ├── ApiResponse.kt               # Response data class
+│   └── HttpExecutor.kt              # OkHttp-based HTTP client (cancellable)
 ├── scanner/
-│   └── EndpointScanner.kt          # PSI-based REST endpoint scanner
+│   └── EndpointScanner.kt           # Spring Boot & JAX-RS endpoint scanner
 ├── settings/
-│   ├── LiveApiTesterSettings.kt    # PersistentStateComponent
-│   └── LiveApiTesterConfigurable.kt # Settings page UI
+│   ├── LiveApiTesterSettings.kt     # Persistent settings (GitHub Models defaults)
+│   └── LiveApiTesterConfigurable.kt # Settings UI
 └── ui/
-    ├── LiveApiTesterToolWindowFactory.kt # Tool window entry point
-    ├── RequestPanel.kt             # Request builder UI
-    ├── ResponsePanel.kt            # Response viewer UI
-    ├── HistoryPanel.kt             # Request history list
-    ├── CollectionsPanel.kt         # Collections tree view
-    └── EnvironmentPanel.kt         # Environment manager UI
+    ├── LiveApiTesterToolWindowFactory.kt  # Tool window factory
+    ├── RequestPanel.kt              # Request builder UI
+    ├── ResponsePanel.kt             # Response viewer UI
+    ├── CollectionsPanel.kt          # Collections browser
+    ├── EnvironmentPanel.kt          # Environment manager
+    ├── HistoryPanel.kt              # Request history
+    ├── DebugToolbarPanel.kt         # Debug controls toolbar
+    └── LiveApiTesterStatusBarWidget.kt   # Status bar widget
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Language:** Kotlin 1.9
+- **Language:** Kotlin 1.8
 - **Build:** Gradle 8.8 with IntelliJ Platform Gradle Plugin 1.17.3
-- **HTTP Client:** OkHttp 4.12.0
+- **HTTP Client:** OkHttp 4.12.0 (with request cancellation)
 - **JSON:** Gson 2.10.1
-- **AI:** OpenAI-compatible REST API
+- **AI:** GitHub Models API (`https://models.github.ai/inference`)
 - **UI:** IntelliJ Tool Window + Swing / JBTable / JBTabbedPane
+- **Debugger:** IntelliJ XDebugger API + Java PSI
 - **Min IntelliJ Version:** 2023.1 (IC or IU)
+
+---
+
+## 🔒 Security
+
+- GitHub PAT stored via IntelliJ's `PasswordSafe` (never in plain text)
+- Authorization header values masked by default in response headers view
+- AI prompts do not include API keys/tokens
+- URL validated before sending requests
 
 ---
 
@@ -198,6 +216,17 @@ src/main/kotlin/com/liveapitester/
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] OAuth 2.0 flow support
+- [ ] WebSocket testing
+- [ ] GraphQL support
+- [ ] cURL import
+- [ ] Response schema validation
+- [ ] Publish to JetBrains Marketplace
 
 ---
 
