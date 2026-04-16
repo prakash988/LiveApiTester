@@ -2,28 +2,45 @@
     <id>com.liveapitester</id>
     <name>LiveApiTester - AI-Powered API Tester</name>
     <vendor email="support@liveapitester.com" url="https://github.com/prakash988/LiveApiTester">LiveApiTester</vendor>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
 
     <description><![CDATA[
         <p><b>LiveApiTester</b> — AI-Powered Live API Testing Plugin for IntelliJ IDEA.</p>
-        <p>Like Postman/Bruno but embedded directly in the IDE, powered by AI (OpenAI-compatible).</p>
+        <p>Like Postman/Bruno but embedded directly in the IDE, powered by GitHub Models AI and with full IntelliJ Debugger Integration.</p>
         <br/>
         <b>Features:</b>
         <ul>
             <li>🚀 Live HTTP client: GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS</li>
-            <li>🤖 AI-powered error explanation (OpenAI-compatible)</li>
+            <li>🤖 AI-powered error explanation (GitHub Models AI — GPT-4o, Claude, Llama, Mistral)</li>
             <li>🤖 AI test case generation for any endpoint</li>
             <li>🤖 AI-generated request body samples</li>
+            <li>🐛 Send &amp; Debug — auto-sets breakpoints on matching controller methods</li>
+            <li>▶️ Start/Stop backend services directly from the plugin</li>
             <li>🔍 Auto-scan Spring Boot &amp; JAX-RS endpoints from your project</li>
             <li>📁 Collections: save and organize requests</li>
             <li>🌍 Environments: manage dev/staging/prod variables with {{variable}} interpolation</li>
             <li>📜 Request history: replay previous requests</li>
             <li>🔐 Auth: Bearer Token, Basic Auth, API Key</li>
-            <li>⚙️ Configurable AI endpoint, model, and timeouts</li>
+            <li>⌨️ Keyboard shortcuts: Ctrl+Enter (send), Ctrl+Shift+Enter (debug), Escape (cancel)</li>
+            <li>📋 Copy as cURL command</li>
+            <li>⏱️ Response time color coding (green/yellow/red)</li>
         </ul>
     ]]></description>
 
     <change-notes><![CDATA[
+        <b>2.0.0</b>
+        <ul>
+            <li>Switched AI backend to GitHub Models API (GPT-4o, Claude 3.5, Llama, Mistral)</li>
+            <li>Added full IntelliJ Debugger Integration — Send &amp; Debug workflow</li>
+            <li>Added Start/Stop service management from plugin</li>
+            <li>Added keyboard shortcuts (Ctrl+Enter, Ctrl+Shift+Enter, Escape)</li>
+            <li>Added request cancellation</li>
+            <li>Added Copy as cURL button</li>
+            <li>Added response time color coding</li>
+            <li>Added authorization header masking</li>
+            <li>Improved error messages</li>
+            <li>Added status bar widget</li>
+        </ul>
         <b>1.0.0</b>
         <ul>
             <li>Initial release</li>
@@ -60,6 +77,10 @@
             serviceImplementation="com.liveapitester.environment.EnvironmentManager"/>
         <projectService
             serviceImplementation="com.liveapitester.history.HistoryManager"/>
+        <projectService
+            serviceImplementation="com.liveapitester.debugger.DebuggerService"/>
+        <projectService
+            serviceImplementation="com.liveapitester.debugger.ServiceManager"/>
 
         <!-- Settings Configurable -->
         <applicationConfigurable
@@ -67,6 +88,12 @@
             instance="com.liveapitester.settings.LiveApiTesterConfigurable"
             id="com.liveapitester.settings.LiveApiTesterConfigurable"
             displayName="LiveApiTester"/>
+
+        <!-- Status Bar Widget -->
+        <statusBarWidgetFactory
+            id="LiveApiTesterStatusBar"
+            implementation="com.liveapitester.ui.LiveApiTesterStatusBarWidgetFactory"
+            order="last"/>
 
     </extensions>
 

@@ -43,14 +43,18 @@ tasks {
         pluginDescription.set(
             """
             <p><b>LiveApiTester</b> — AI-Powered Live API Testing Plugin for IntelliJ IDEA.</p>
-            <p>Like Postman/Bruno but embedded directly in the IDE, powered by AI (OpenAI-compatible).</p>
+            <p>Like Postman/Bruno but embedded directly in the IDE, powered by GitHub Models AI and full IntelliJ Debugger Integration.</p>
             <ul>
               <li>Live HTTP client supporting GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS</li>
-              <li>AI-powered error explanation and test generation</li>
+              <li>AI-powered error explanation and test generation via GitHub Models (GPT-4o, Claude, Llama, Mistral)</li>
+              <li>🐛 Send &amp; Debug — auto-sets breakpoints on matching controller methods</li>
+              <li>▶️ Start/Stop backend services directly from the plugin</li>
               <li>Spring Boot &amp; JAX-RS endpoint scanner</li>
               <li>Collections, environments, and request history</li>
               <li>Variable interpolation with {{variable}} syntax</li>
               <li>Auth support: Bearer, Basic, API Key</li>
+              <li>Keyboard shortcuts: Ctrl+Enter (send), Ctrl+Shift+Enter (debug), Escape (cancel)</li>
+              <li>Copy as cURL, response time color coding, auth header masking</li>
             </ul>
             """.trimIndent()
         )

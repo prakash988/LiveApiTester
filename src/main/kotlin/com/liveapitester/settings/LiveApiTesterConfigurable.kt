@@ -14,7 +14,7 @@ import javax.swing.*
 class LiveApiTesterConfigurable : Configurable {
 
     private var aiEndpointField: JBTextField? = null
-    private var aiModelField: JBTextField? = null
+    private var aiModelCombo: JComboBox<String>? = null
     private var apiKeyField: JBPasswordField? = null
     private var timeoutField: JSpinner? = null
     private var followRedirectsCheck: JBCheckBox? = null
@@ -49,21 +49,29 @@ class LiveApiTesterConfigurable : Configurable {
         row++
 
         gc.gridx = 0; gc.gridy = row; gc.gridwidth = 2
-        panel.add(JBLabel("<html><b>AI Configuration</b></html>"), gc)
+        panel.add(JBLabel("<html><b>AI Configuration (GitHub Models)</b></html>"), gc)
         gc.gridwidth = 1
         row++
 
         aiEndpointField = JBTextField(settings.aiEndpoint)
-        addRow("API Endpoint:", aiEndpointField!!)
+        addRow("GitHub Models API Endpoint:", aiEndpointField!!)
 
-        aiModelField = JBTextField(settings.aiModel)
-        addRow("Model:", aiModelField!!)
+        aiModelCombo = JComboBox(LiveApiTesterSettings.AVAILABLE_MODELS.toTypedArray())
+        aiModelCombo!!.isEditable = true
+        val currentModel = settings.aiModel
+        if (LiveApiTesterSettings.AVAILABLE_MODELS.contains(currentModel)) {
+            aiModelCombo!!.selectedItem = currentModel
+        } else {
+            aiModelCombo!!.selectedItem = currentModel
+        }
+        addRow("Model:", aiModelCombo!!)
 
         apiKeyField = JBPasswordField()
-        addRow("API Key:", apiKeyField!!)
+        addRow("GitHub Personal Access Token (PAT):", apiKeyField!!)
 
         gc.gridx = 0; gc.gridy = row; gc.gridwidth = 2
-        panel.add(JBLabel("<html><i>API key is stored securely in IntelliJ's PasswordSafe</i></html>"), gc)
+        panel.add(JBLabel("<html><i>PAT is stored securely in IntelliJ's PasswordSafe.<br>" +
+            "Get your PAT from github.com/settings/tokens with 'models' or 'copilot' scope.</i></html>"), gc)
         gc.gridwidth = 1
         row++
 
@@ -106,7 +114,7 @@ class LiveApiTesterConfigurable : Configurable {
     override fun isModified(): Boolean {
         val settings = LiveApiTesterSettings.getInstance()
         return aiEndpointField?.text != settings.aiEndpoint
-                || aiModelField?.text != settings.aiModel
+                || aiModelCombo?.selectedItem?.toString() != settings.aiModel
                 || (timeoutField?.value as? Int) != settings.timeoutSeconds
                 || (maxHistoryField?.value as? Int) != settings.maxHistory
                 || followRedirectsCheck?.isSelected != settings.followRedirects
@@ -117,7 +125,7 @@ class LiveApiTesterConfigurable : Configurable {
     override fun apply() {
         val settings = LiveApiTesterSettings.getInstance()
         settings.aiEndpoint = aiEndpointField?.text?.trim() ?: settings.aiEndpoint
-        settings.aiModel = aiModelField?.text?.trim() ?: settings.aiModel
+        settings.aiModel = aiModelCombo?.selectedItem?.toString()?.trim() ?: settings.aiModel
         settings.timeoutSeconds = (timeoutField?.value as? Int) ?: settings.timeoutSeconds
         settings.maxHistory = (maxHistoryField?.value as? Int) ?: settings.maxHistory
         settings.followRedirects = followRedirectsCheck?.isSelected ?: settings.followRedirects
@@ -133,7 +141,7 @@ class LiveApiTesterConfigurable : Configurable {
     override fun reset() {
         val settings = LiveApiTesterSettings.getInstance()
         aiEndpointField?.text = settings.aiEndpoint
-        aiModelField?.text = settings.aiModel
+        aiModelCombo?.selectedItem = settings.aiModel
         timeoutField?.value = settings.timeoutSeconds
         maxHistoryField?.value = settings.maxHistory
         followRedirectsCheck?.isSelected = settings.followRedirects
