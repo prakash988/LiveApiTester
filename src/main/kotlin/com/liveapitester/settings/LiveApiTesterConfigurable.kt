@@ -58,12 +58,7 @@ class LiveApiTesterConfigurable : Configurable {
 
         aiModelCombo = JComboBox(LiveApiTesterSettings.AVAILABLE_MODELS.toTypedArray())
         aiModelCombo!!.isEditable = true
-        val currentModel = settings.aiModel
-        if (LiveApiTesterSettings.AVAILABLE_MODELS.contains(currentModel)) {
-            aiModelCombo!!.selectedItem = currentModel
-        } else {
-            aiModelCombo!!.selectedItem = currentModel
-        }
+        aiModelCombo!!.selectedItem = settings.aiModel
         addRow("Model:", aiModelCombo!!)
 
         apiKeyField = JBPasswordField()
